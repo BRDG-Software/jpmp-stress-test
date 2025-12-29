@@ -1,0 +1,13 @@
+{
+  "kiosk_id": 2,
+  "items": [
+    {
+      "id": 4,
+      "customizations": {}
+    }
+  ],
+  "user_profile": {
+    "id": "null",
+    "firstName": "null"
+  }
+}
