@@ -3,6 +3,7 @@ import 'dotenv/config'
 
 const urls = process.env.MACHINES.split(", ")
 
+const port = process.env.PORT || 8888
 const interval = process.env.ORDER_INTERVAL || 4000
 const delay = process.env.INITIAL_DELAY || 1000
 const orders = process.env.NUMBER_OF_ORDERS || 3
@@ -14,7 +15,7 @@ function sleep(ms) {
 
 async function statusGet(urlIn) {
   try {
-    const response = await axios.get("http://"+urlIn+"/status");
+    const response = await axios.get("http://"+urlIn+":"+port+"/status");
     console.log(response.data);
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -24,7 +25,7 @@ async function statusGet(urlIn) {
 async function runsimGet(urlIn, num) {
 	try {
 		const currentDelay = delay*num
-		const orderURL = `http://${urlIn}/runsim?orders=${orders}&kiosk=${kiosk}&delay=${currentDelay}&interval=${interval}`
+		const orderURL = `http://${urlIn}:${port}/runsim?orders=${orders}&kiosk=${kiosk}&delay=${currentDelay}&interval=${interval}`
 		console.log(`trying ${orderURL}`)
 		const response = await axios.get(orderURL)
 	} catch (error) {
