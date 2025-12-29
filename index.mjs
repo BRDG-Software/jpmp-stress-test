@@ -1,8 +1,11 @@
 import axios from 'axios'
+import 'dotenv/config'
 import express from 'express'
 import inNames from './first-names.json' with { type: 'json'}
 import inOrder from "./order-example.json" with {type: 'json'}
 import {randomInt} from './utils.mjs'
+
+const dbURL = process.env.DB_URL
 
 	//stagger the timing between paypad orders
 const initialDelay = 202
@@ -22,8 +25,8 @@ inOrder.user_profile.id = newId
 inOrder.user_profile.firstName = outName
 inOrder.items[0].id = targetItem
 
-const getty = "https://nrf.jpmp.brdgdev.com/orders?latest=1"
-const posty = "https://nrf.jpmp.brdgdev.com/orders"
+const getty = dbURL +"orders?latest=1"
+const posty = dbURL + "orders"
 
 async function orderGet() {
   try {
