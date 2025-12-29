@@ -13,6 +13,8 @@ const orderTime = 6000
 
 let statusMaster = "idle"
 
+let orderKiosk = 1
+let newItem = 1
 const outName = inNames[randomInt(0,4945)] + String(randomInt(100000000,999999999))
 const phone = String(randomInt(1000000000,9999999999))
 const newId = outName + "-+1 " + phone + "::" + outName + "@test.com" 
@@ -27,6 +29,28 @@ inOrder.items[0].id = targetItem
 
 const getty = dbURL +"orders?latest=1"
 const posty = dbURL + "orders"
+
+const genNewOrder = () => {
+	const newOutName = inNames[randomInt(0,4945)] + String(randomInt(100000000,999999999))
+	const newPhone = String(randomInt(1000000000,9999999999))
+	const newId = newOutName + "-+1 " + newPhone + "::" + newOutName + "@test.com" 
+	
+	if (orderKiosk==1) {
+		newItem = randomInt(1,3)
+		inOrder.kiosk_type = "juice"
+	}
+	else if (orderKiosk==2) {
+		newItem = randomInt(4,6)
+		inOrder.kiosk_type = "sweet"
+	}
+	inOrder.user_profile.id = newId
+	inOrder.user_profile.firstName = newOutName
+	inOrder.kiosk_id = orderKiosk
+	inOrder.items[0].id = newItem
+
+	const outOrder = inOrder
+	return outOrder
+}
 
 async function orderGet() {
   try {
@@ -48,13 +72,32 @@ const postData = async () => {
   }
 };
 
+const postOrder = async (orderIn) => {
+  try {
+    const response = await axios.post(posty, orderIn);
+
+    console.log(response.data);
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+const waitToTryOrder = async (orderNum, intervally, initialDelay) => {
+	statusMaster = "RUNNING SIMULATION PLEASE WAIT"
+	await sleep(initialDelay)
+	tryOrder(orderNum, intervally) 
+}
+
 const tryOrder = async (orderNum, intervally) => {
 	while (orderNum > 0) {
-		statusMaster = "RUNNING SIMULATION PLEASE WAIT"
+		//const newOrder = genNewOrder()
+		//console.log(newOrder)
+		postOrder(genNewOrder())
 		console.log(`ordering ${orderNum}`)
 		await sleep(intervally)
 		orderNum -= 1
@@ -100,11 +143,15 @@ app.get('/status', (req,res) => {
 })
 //localhost:3434/runsim?orders=10&kiosk=2&delay=200&interval=4000
 
+
 app.get('/runsim', (req,res) => {
 	const initialDelay = req.query.delay
 	const interval = req.query.interval
 	const kiosknum = req.query.kiosk
 	const orders = req.query.orders
+	
+	orderKiosk = kiosknum
+
 	if (initialDelay && interval) {
 		res.send(`scheduling simulated ordering of ${orders} orders with ${initialDelay} delay and ${interval} timing to kiosk ${kiosknum}`)
 	}
@@ -112,7 +159,8 @@ app.get('/runsim', (req,res) => {
 		res.send('please provide a ORDERS, KIOSK, DELAY, and INTERVAL argument')
 	}
 	console.log(`received request to run simulated ordering of ${orders} orders with ${initialDelay} delay and ${interval} timing to kiosk ${kiosknum}`)
-	tryOrder(orders,2000)
+	waitToTryOrder(orders,interval,initialDelay)
+	//tryOrder(orders,interval)
 })
 app.listen(port, () => {
 	console.log(`listening on porty ${port}`)
